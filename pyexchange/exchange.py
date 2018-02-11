@@ -10,6 +10,8 @@ with some generic currency.
 # -- Order expiry
 # -- Add multiprocessing
 
+from tabulate import tabulate
+
 from pyexchange.order import Ask, Bid
 from pyexchange.trader import Trader
 from pyexchange.transaction import Transaction
@@ -75,6 +77,22 @@ class Exchange(object):
         # Remove filled orders
         self.bids = list(filter(lambda a_bid: a_bid.units > 0, self.bids))
         self.asks = list(filter(lambda an_ask: an_ask.units > 0, self.asks))
+
+    def display_orders(self):
+        table = []
+        for _, bid in enumerate(self.bids):
+            bid_display = "{} units @ {}".format(bid.units, bid.price)
+            table.append([bid_display, ""])
+
+        for i, ask in enumerate(self.asks):
+            ask_display = "{} units @ {}".format(ask.units, ask.price)
+            if i < len(table):
+                table[i][1] = ask_display
+            else:
+                table.append(["", ask_display])
+
+        headers = ["Bids", "Asks"]
+        return tabulate(table, headers, tablefmt="grid")
 
     @staticmethod
     def trade_is_valid(buyer, seller, units, price):

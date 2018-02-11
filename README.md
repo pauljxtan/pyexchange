@@ -3,7 +3,8 @@ A (very) simple object-oriented market exchange simulator in Python.
 
 ### Requirements
 
-Vanilla Python 3.
+* Python 3
+* tabulate
 
 ### Example
 

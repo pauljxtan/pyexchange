@@ -2,9 +2,11 @@
 A (very) simple object-oriented market exchange simulator in Python.
 
 ### Requirements
+
 Vanilla Python 3.
 
 ### Example
+
 ```python
 from exchange import Exchange, Trader
 

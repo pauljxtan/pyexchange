@@ -35,4 +35,21 @@ print(aurelius)
 print(seneca)
 # [Trader: name=M. Aurelius, funds=10297, units=97]
 # [Trader: name=L. A. Seneca, funds=9703, units=103]
+
+exchange.sell(5, 101, aurelius)
+exchange.sell(3, 102, aurelius)
+exchange.sell(7, 103, aurelius)
+exchange.buy(6, 99, seneca)
+exchange.buy(2, 98, seneca)
+
+print(exchange.display_orders())
+# +---------------+---------------+
+# | Bids          | Asks          |
+# +===============+===============+
+# | 7 units @ 100 | 5 units @ 101 |
+# +---------------+---------------+
+# | 6 units @ 99  | 3 units @ 102 |
+# +---------------+---------------+
+# | 2 units @ 98  | 7 units @ 103 |
+# +---------------+---------------+
 ```

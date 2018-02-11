@@ -78,6 +78,18 @@ class Exchange(object):
         self.bids = list(filter(lambda a_bid: a_bid.units > 0, self.bids))
         self.asks = list(filter(lambda an_ask: an_ask.units > 0, self.asks))
 
+    def display_full(self):
+        display = self.display_stats() + "\n"
+        display += self.display_orders()
+        return display
+
+    def display_stats(self):
+        table = [
+            ["Mid price: {}".format(self.mid_price()), "Spread: {}".format(self.spread())],
+            ["Bid volume: {}".format(self.bid_volume()), "Ask volume: {}".format(self.ask_volume())]
+        ]
+        return tabulate(table, tablefmt="plain")
+
     def display_orders(self):
         table = []
         for _, bid in enumerate(self.bids):
@@ -93,6 +105,18 @@ class Exchange(object):
 
         headers = ["Bids", "Asks"]
         return tabulate(table, headers, tablefmt="grid")
+
+    def mid_price(self):
+        return (self.bids[0].price + self.asks[0].price) / 2.0
+
+    def spread(self):
+        return self.asks[0].price - self.bids[0].price
+
+    def bid_volume(self):
+        return sum([bid.units for bid in self.bids])
+
+    def ask_volume(self):
+        return sum([ask.units for ask in self.asks])
 
     @staticmethod
     def trade_is_valid(buyer, seller, units, price):

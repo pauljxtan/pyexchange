@@ -42,7 +42,9 @@ exchange.sell(7, 103, aurelius)
 exchange.buy(6, 99, seneca)
 exchange.buy(2, 98, seneca)
 
-print(exchange.display_orders())
+print(exchange.display_full())
+# Mid price: 100.5  Spread: 1
+# Bid volume: 15    Ask volume: 15
 # +---------------+---------------+
 # | Bids          | Asks          |
 # +===============+===============+

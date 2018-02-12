@@ -23,7 +23,9 @@ class Bid(Order):
         self.buyer = buyer
 
     def __repr__(self):
-        return "[Bid: units={}, price={}, buyer={}]".format(self.units, self.price, self.buyer)
+        return "[Bid: units={}, price={}, buyer={}]".format(self.units,
+                                                            self.price,
+                                                            self.buyer)
 
 
 class Ask(Order):
@@ -36,4 +38,6 @@ class Ask(Order):
         self.seller = seller
 
     def __repr__(self):
-        return "[Ask: units={}, price={}, seller={}]".format(self.units, self.price, self.seller)
+        return "[Ask: units={}, price={}, seller={}]".format(self.units,
+                                                             self.price,
+                                                             self.seller)

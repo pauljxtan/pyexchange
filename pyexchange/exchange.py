@@ -27,6 +27,7 @@ class Exchange(object):
         """
         Places an order to buy a number of units at the given price per unit.
         """
+
         self.bids.append(Bid(units, price, buyer))
         # Sort the bids in decreasing price
         self.bids.sort(key=lambda bid: -bid.price)
@@ -58,7 +59,8 @@ class Exchange(object):
                         else:
                             units_to_trade = ask.units
 
-                        if not self.trade_is_valid(bid.buyer, ask.seller, units_to_trade, ask.price):
+                        if not self.trade_is_valid(bid.buyer, ask.seller,
+                                                   units_to_trade, ask.price):
                             # TODO: something
                             continue
 
@@ -70,7 +72,9 @@ class Exchange(object):
                         ask.seller.funds += ask.price * units_to_trade
                         ask.seller.units -= units_to_trade
 
-                        self.transactions.append(Transaction(bid.buyer, ask.seller, units_filled, ask.price))
+                        self.transactions.append(
+                            Transaction(bid.buyer, ask.seller, units_filled,
+                                        ask.price))
                 break
             self.bids[i].units -= units_filled
 
@@ -85,8 +89,10 @@ class Exchange(object):
 
     def display_stats(self):
         table = [
-            ["Mid price: {}".format(ExchangeStats.mid_price(self)), "Spread: {}".format(ExchangeStats.spread(self))],
-            ["Bid volume: {}".format(ExchangeStats.bid_volume(self)), "Ask volume: {}".format(ExchangeStats.ask_volume(self))]
+            ["Mid price: {}".format(ExchangeStats.mid_price(self)),
+             "Spread: {}".format(ExchangeStats.spread(self))],
+            ["Bid volume: {}".format(ExchangeStats.bid_volume(self)),
+             "Ask volume: {}".format(ExchangeStats.ask_volume(self))]
         ]
         return tabulate(table, tablefmt="plain")
 

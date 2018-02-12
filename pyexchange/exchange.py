@@ -85,8 +85,8 @@ class Exchange(object):
 
     def display_stats(self):
         table = [
-            ["Mid price: {}".format(self.mid_price()), "Spread: {}".format(self.spread())],
-            ["Bid volume: {}".format(self.bid_volume()), "Ask volume: {}".format(self.ask_volume())]
+            ["Mid price: {}".format(ExchangeStats.mid_price(self)), "Spread: {}".format(ExchangeStats.spread(self))],
+            ["Bid volume: {}".format(ExchangeStats.bid_volume(self)), "Ask volume: {}".format(ExchangeStats.ask_volume(self))]
         ]
         return tabulate(table, tablefmt="plain")
 
@@ -106,18 +106,6 @@ class Exchange(object):
         headers = ["Bids", "Asks"]
         return tabulate(table, headers, tablefmt="grid")
 
-    def mid_price(self):
-        return (self.bids[0].price + self.asks[0].price) / 2.0
-
-    def spread(self):
-        return self.asks[0].price - self.bids[0].price
-
-    def bid_volume(self):
-        return sum([bid.units for bid in self.bids])
-
-    def ask_volume(self):
-        return sum([ask.units for ask in self.asks])
-
     @staticmethod
     def trade_is_valid(buyer, seller, units, price):
         """
@@ -126,3 +114,21 @@ class Exchange(object):
         """
         # TODO: Some sort of logging/notification here
         return buyer.funds >= units * price and seller.units >= units
+
+
+class ExchangeStats(object):
+    @classmethod
+    def mid_price(cls, exchange):
+        return (exchange.bids[0].price + exchange.asks[0].price) / 2.0
+
+    @classmethod
+    def spread(cls, exchange):
+        return exchange.asks[0].price - exchange.bids[0].price
+
+    @classmethod
+    def bid_volume(cls, exchange):
+        return sum([bid.units for bid in exchange.bids])
+
+    @classmethod
+    def ask_volume(cls, exchange):
+        return sum([ask.units for ask in exchange.asks])

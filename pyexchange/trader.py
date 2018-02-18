@@ -12,3 +12,7 @@ class Trader(object):
         return "[Trader: name={}, funds={}, units={}]".format(self.name,
                                                               self.funds,
                                                               self.units)
+
+
+# A "fake" trader to use as a placeholder
+FAKE_TRADER = Trader("Fake Trader", -1, -1)

@@ -55,6 +55,41 @@ class TestExchange(unittest.TestCase):
         self.assertEqual(len(exchange.asks), 3)
         self.assertEqual(len(exchange.transactions), 3)
 
+    def test_collapsed_orders(self):
+        exchange = Exchange()
+
+        aurelius = Trader("M. Aurelius", 10000, 100)
+
+        exchange.buy(2, 50, aurelius)
+        exchange.buy(8, 50, aurelius)
+        exchange.buy(5, 50, aurelius)
+        exchange.buy(6, 51, aurelius)
+        exchange.buy(3, 52, aurelius)
+        exchange.buy(9, 52, aurelius)
+
+        collapsed_bids = exchange.collapsed_bids()
+        self.assertEqual(collapsed_bids[0].units, 12)
+        self.assertEqual(collapsed_bids[0].price, 52)
+        self.assertEqual(collapsed_bids[1].units, 6)
+        self.assertEqual(collapsed_bids[1].price, 51)
+        self.assertEqual(collapsed_bids[2].units, 15)
+        self.assertEqual(collapsed_bids[2].price, 50)
+
+        exchange.sell(7, 55, aurelius)
+        exchange.sell(4, 55, aurelius)
+        exchange.sell(8, 54, aurelius)
+        exchange.sell(1, 54, aurelius)
+        exchange.sell(3, 54, aurelius)
+        exchange.sell(5, 53, aurelius)
+
+        collapsed_asks = exchange.collapsed_asks()
+        self.assertEqual(collapsed_asks[0].units, 5)
+        self.assertEqual(collapsed_asks[0].price, 53)
+        self.assertEqual(collapsed_asks[1].units, 12)
+        self.assertEqual(collapsed_asks[1].price, 54)
+        self.assertEqual(collapsed_asks[2].units, 11)
+        self.assertEqual(collapsed_asks[2].price, 55)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

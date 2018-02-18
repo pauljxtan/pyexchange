@@ -6,14 +6,17 @@ with some generic currency.
 # TODO:
 # -- Logging
 # -- Simulations with random trades
-# -- CLI interface (live updating, etc.)
+# ---- E.g. perfectly efficient market or programmed trader behaviour,
+#      "black swans", etc.
+# -- CLI/GUI with live updating, etc.
 # -- Order expiry
 # -- Add multiprocessing
 
+import random
 from tabulate import tabulate
 
 from pyexchange.order import Ask, Bid
-from pyexchange.trader import Trader
+from pyexchange.trader import Trader, FAKE_TRADER
 from pyexchange.transaction import Transaction
 
 
@@ -23,29 +26,37 @@ class Exchange(object):
         self.asks = []
         self.transactions = []
 
-    def buy(self, units, price, buyer):
+    def buy(self, units, price, buyer, verbose=False):
         """
         Places an order to buy a number of units at the given price per unit.
         """
+        if verbose: print("BUY: {} @ {}".format(units, price))
 
         self.bids.append(Bid(units, price, buyer))
         # Sort the bids in decreasing price
         self.bids.sort(key=lambda bid: -bid.price)
         self.fill_orders()
 
-    def sell(self, units, price, seller):
+    def sell(self, units, price, seller, verbose=False):
         """
         Places an order to sell a number of units at the given price per unit.
         """
+        if verbose: print("SELL: {} @ {}".format(units, price))
+
         self.asks.append(Ask(units, price, seller))
         # Sort the asks in increasing price
         self.asks.sort(key=lambda ask: ask.price)
         self.fill_orders()
 
+    def ensure_orders_are_sorted(self):
+        self.bids.sort(key=lambda bid: -bid.price)
+        self.asks.sort(key=lambda ask: ask.price)
+
     def fill_orders(self):
         """
         Fills as many orders as possible. (Orders may be partially filled.)
         """
+        self.ensure_orders_are_sorted()
         # TODO: Think about how to optimize this
         for i, bid in enumerate(self.bids):
             units_filled = 0
@@ -83,11 +94,19 @@ class Exchange(object):
         self.asks = list(filter(lambda an_ask: an_ask.units > 0, self.asks))
 
     def display_full(self):
+        """
+        Returns a string with an overall summary of the exchange.
+        """
         display = self.display_stats() + "\n"
         display += self.display_orders()
         return display
 
     def display_stats(self):
+        """
+        Returns a string with various statistics.
+        """
+        self.ensure_orders_are_sorted()
+
         table = [
             ["Mid price: {}".format(ExchangeStats.mid_price(self)),
              "Spread: {}".format(ExchangeStats.spread(self))],
@@ -97,12 +116,17 @@ class Exchange(object):
         return tabulate(table, tablefmt="plain")
 
     def display_orders(self):
+        """
+        Returns a string with tabulated buy and sell orders.
+        """
+        self.ensure_orders_are_sorted()
+
         table = []
-        for _, bid in enumerate(self.bids):
+        for _, bid in enumerate(self.collapsed_bids()):
             bid_display = "{} units @ {}".format(bid.units, bid.price)
             table.append([bid_display, ""])
 
-        for i, ask in enumerate(self.asks):
+        for i, ask in enumerate(self.collapsed_asks()):
             ask_display = "{} units @ {}".format(ask.units, ask.price)
             if i < len(table):
                 table[i][1] = ask_display
@@ -111,6 +135,46 @@ class Exchange(object):
 
         headers = ["Bids", "Asks"]
         return tabulate(table, headers, tablefmt="grid")
+
+    # TODO: The following two methods are similar enough that they can
+    # probably be combined
+
+    def collapsed_bids(self):
+        """
+        Return a list with bids of the same price combined.
+        E.g. (2 @ 42) + (4 @ 42) -> (6 @ 42)
+        """
+        self.ensure_orders_are_sorted()
+
+        collapsed = []
+        current = Bid(self.bids[0].units, self.bids[0].price, FAKE_TRADER)
+        for _, bid in enumerate(self.bids[1:]):
+            if bid.price < current.price:
+                collapsed.append(current)
+                current = Bid(bid.units, bid.price, FAKE_TRADER)
+                continue
+            current.units += bid.units
+        collapsed.append(current)
+
+        return collapsed
+
+    def collapsed_asks(self):
+        """
+        Return a list with asks of the same price combined.
+        """
+        self.ensure_orders_are_sorted()
+
+        collapsed = []
+        current = Ask(self.asks[0].units, self.asks[0].price, FAKE_TRADER)
+        for _, ask in enumerate(self.asks[1:]):
+            if ask.price > current.price:
+                collapsed.append(current)
+                current = Ask(ask.units, ask.price, FAKE_TRADER)
+                continue
+            current.units += ask.units
+        collapsed.append(current)
+
+        return collapsed
 
     @staticmethod
     def trade_is_valid(buyer, seller, units, price):
@@ -125,10 +189,12 @@ class Exchange(object):
 class ExchangeStats(object):
     @classmethod
     def mid_price(cls, exchange):
+        if len(exchange.bids) == 0 or len(exchange.asks) == 0: return None
         return (exchange.bids[0].price + exchange.asks[0].price) / 2.0
 
     @classmethod
     def spread(cls, exchange):
+        if len(exchange.bids) == 0 or len(exchange.asks) == 0: return None
         return exchange.asks[0].price - exchange.bids[0].price
 
     @classmethod

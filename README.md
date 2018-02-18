@@ -5,6 +5,7 @@ A (very) simple object-oriented market exchange simulator in Python.
 
 * Python 3
 * tabulate
+* tkinter
 
 ### Example
 

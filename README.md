@@ -56,3 +56,7 @@ print(exchange.display_full())
 # | 2 units @ 98  | 7 units @ 103 |
 # +---------------+---------------+
 ```
+
+### Dev notes
+
+Reference [style guide](https://gist.github.com/sloria/7001839).

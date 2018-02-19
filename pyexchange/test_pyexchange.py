@@ -1,6 +1,7 @@
 import unittest
 
-from pyexchange.exchange import Exchange, Trader
+from pyexchange.exchange import Exchange, ExchangeHelper
+from pyexchange.trader import Trader
 
 
 class TestExchange(unittest.TestCase):
@@ -55,25 +56,19 @@ class TestExchange(unittest.TestCase):
         self.assertEqual(len(exchange.asks), 3)
         self.assertEqual(len(exchange.transactions), 3)
 
-    def test_collapsed_orders(self):
+
+class TestExchangeHelper(unittest.TestCase):
+    def _get_test_exchange_1(self):
         exchange = Exchange()
 
         aurelius = Trader("M. Aurelius", 10000, 100)
 
-        exchange.buy(2, 50, aurelius)
         exchange.buy(8, 50, aurelius)
         exchange.buy(5, 50, aurelius)
         exchange.buy(6, 51, aurelius)
         exchange.buy(3, 52, aurelius)
         exchange.buy(9, 52, aurelius)
-
-        collapsed_bids = exchange.collapsed_bids()
-        self.assertEqual(collapsed_bids[0].units, 12)
-        self.assertEqual(collapsed_bids[0].price, 52)
-        self.assertEqual(collapsed_bids[1].units, 6)
-        self.assertEqual(collapsed_bids[1].price, 51)
-        self.assertEqual(collapsed_bids[2].units, 15)
-        self.assertEqual(collapsed_bids[2].price, 50)
+        exchange.buy(2, 50, aurelius)
 
         exchange.sell(7, 55, aurelius)
         exchange.sell(4, 55, aurelius)
@@ -82,7 +77,21 @@ class TestExchange(unittest.TestCase):
         exchange.sell(3, 54, aurelius)
         exchange.sell(5, 53, aurelius)
 
-        collapsed_asks = exchange.collapsed_asks()
+        return exchange
+
+    def test_collapsed_bids(self):
+        exchange = self._get_test_exchange_1()
+        collapsed_bids = ExchangeHelper.collapsed_bids(exchange)
+        self.assertEqual(collapsed_bids[0].units, 12)
+        self.assertEqual(collapsed_bids[0].price, 52)
+        self.assertEqual(collapsed_bids[1].units, 6)
+        self.assertEqual(collapsed_bids[1].price, 51)
+        self.assertEqual(collapsed_bids[2].units, 15)
+        self.assertEqual(collapsed_bids[2].price, 50)
+
+    def test_collapsed_asks(self):
+        exchange = self._get_test_exchange_1()
+        collapsed_asks = ExchangeHelper.collapsed_asks(exchange)
         self.assertEqual(collapsed_asks[0].units, 5)
         self.assertEqual(collapsed_asks[0].price, 53)
         self.assertEqual(collapsed_asks[1].units, 12)

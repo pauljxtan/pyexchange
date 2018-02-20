@@ -5,9 +5,6 @@ with some generic currency.
 
 # TODO:
 # -- Logging
-# -- Simulations with random trades
-# ---- E.g. perfectly efficient market or programmed trader behaviour,
-#      "black swans", etc.
 # -- CLI/GUI with live updating, etc.
 # -- Order expiry
 # -- Add multiprocessing
@@ -47,42 +44,35 @@ class Exchange(object):
         self._asks = asks
 
     def buy(self, units, price, buyer, verbose=False):
-        """
-        Places an order to buy a number of units at the given price per unit.
-        """
+        """Places an order to buy a number of units at the given price per unit."""
         if verbose: print("BUY: {} @ {}".format(units, price))
 
         self.bids.append(Bid(units, price, buyer))
-        self.fill_orders()
+        self._fill_orders()
 
     def sell(self, units, price, seller, verbose=False):
-        """
-        Places an order to sell a number of units at the given price per unit.
-        """
+        """Places an order to sell a number of units at the given price per unit."""
         if verbose: print("SELL: {} @ {}".format(units, price))
 
         self.asks.append(Ask(units, price, seller))
-        self.fill_orders()
+        self._fill_orders()
 
-    def fill_orders(self):
-        """
-        Fills as many orders as possible. (Orders may be partially filled.)
-        """
+    def _fill_orders(self):
+        """Fills as many orders as possible. (Orders may be partially filled.)"""
         # TODO: Think about how to optimize this
         for i, bid in enumerate(self.bids):
             units_filled = 0
             while units_filled < bid.units:
                 for j, ask in enumerate(self.asks):
                     if ask.price <= bid.price:
-
                         remaining_units = bid.units - units_filled
                         if ask.units > remaining_units:
                             units_to_trade = remaining_units
                         else:
                             units_to_trade = ask.units
 
-                        if not self.trade_is_valid(bid.buyer, ask.seller,
-                                                   units_to_trade, ask.price):
+                        if not self._trade_is_valid(bid.buyer, ask.seller, units_to_trade,
+                                                    ask.price):
                             # TODO: something
                             continue
 
@@ -105,32 +95,23 @@ class Exchange(object):
         self.asks = list(filter(lambda an_ask: an_ask.units > 0, self.asks))
 
     def display_full(self):
-        """
-        Returns a string with an overall summary of the exchange.
-        """
+        """Returns a string with an overall summary of the exchange."""
         display = ExchangeHelper.display_stats(self) + "\n"
         display += ExchangeHelper.display_orders(self)
         return display
 
     @staticmethod
-    def trade_is_valid(buyer, seller, units, price):
-        """
-        Confirms that the buyer has sufficient funds and the seller has
-        sufficient units.
-        """
-        # TODO: Some sort of logging/notification here
+    def _trade_is_valid(buyer, seller, units, price):
+        """Confirms that the buyer has sufficient funds and the seller has sufficient units."""
         return buyer.funds >= units * price and seller.units >= units
 
 
 class ExchangeHelper(object):
-    """
-    Non-essential methods for extracting higher-level data from an exchange.
-    """
+    """Non-essential methods for extracting higher-level data from an exchange."""
+
     @classmethod
     def display_stats(cls, exchange):
-        """
-        Returns a string with various statistics.
-        """
+        """Returns a string with various statistics."""
         table = [
             ["Mid price: {}".format(cls.mid_price(exchange)),
              "Spread: {}".format(cls.spread(exchange))],
@@ -141,9 +122,7 @@ class ExchangeHelper(object):
 
     @classmethod
     def display_orders(cls, exchange):
-        """
-        Returns a string with tabulated buy and sell orders.
-        """
+        """Returns a string with tabulated buy and sell orders."""
         table = []
         for _, bid in enumerate(cls.collapsed_bids(exchange)):
             bid_display = "{} units @ {}".format(bid.units, bid.price)
@@ -171,18 +150,17 @@ class ExchangeHelper(object):
 
     @classmethod
     def bid_volume(cls, exchange):
+        """Returns the total units of demand."""
         return sum([bid.units for bid in exchange.bids])
 
     @classmethod
     def ask_volume(cls, exchange):
+        """Returns the total units of supply."""
         return sum([ask.units for ask in exchange.asks])
 
     @classmethod
     def collapsed_bids(cls, exchange):
-        """
-        Return a list with bids of the same price combined.
-        E.g. (2 @ 42) + (4 @ 42) -> (6 @ 42)
-        """
+        """Returns a list with bids of the same price combined."""
         collapsed = []
         current = Bid(exchange.bids[0].units, exchange.bids[0].price,
                       NO_TRADER)
@@ -198,9 +176,7 @@ class ExchangeHelper(object):
 
     @classmethod
     def collapsed_asks(cls, exchange):
-        """
-        Return a list with asks of the same price combined.
-        """
+        """Returns a list with asks of the same price combined."""
         collapsed = []
         current = Ask(exchange.asks[0].units, exchange.asks[0].price,
                       NO_TRADER)

@@ -28,10 +28,10 @@ class Main(ttk.Frame):
 
         return text, close
 
-    def simulate(self, n_traders, n_orders, start_price):
-        self.simulator = Simulator(n_traders=n_traders, start_price=start_price)
+    def simulate(self, n_traders, n_orders, start_price, prob_buy):
+        self.simulator = Simulator(n_traders=n_traders, start_price=start_price, prob_buy=prob_buy)
         while n_orders > 0:
-            self.simulator.simulate_order()
+            self.simulator.generate_order()
             n_orders -= 1
             self.text.delete("1.0", tk.END)
             self.text.insert(tk.END, self.simulator.exchange.display_full())
@@ -39,7 +39,8 @@ class Main(ttk.Frame):
             time.sleep(0.1)
 
     def simulate_callback(self):
-        self.simulate(10, 100, 100)
+        # Bullish market (90% buyers)
+        self.simulate(10, 1000, 100, 0.9)
 
 
 root = tk.Tk()

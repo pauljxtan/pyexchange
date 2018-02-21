@@ -161,6 +161,8 @@ class ExchangeHelper(object):
     @classmethod
     def collapsed_bids(cls, exchange):
         """Returns a list with bids of the same price combined."""
+        if len(exchange.bids) == 0: return []
+
         collapsed = []
         current = Bid(exchange.bids[0].units, exchange.bids[0].price,
                       NO_TRADER)
@@ -177,6 +179,8 @@ class ExchangeHelper(object):
     @classmethod
     def collapsed_asks(cls, exchange):
         """Returns a list with asks of the same price combined."""
+        if len(exchange.asks) == 0: return []
+
         collapsed = []
         current = Ask(exchange.asks[0].units, exchange.asks[0].price,
                       NO_TRADER)
